@@ -10,6 +10,7 @@ import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.io.IOException;
@@ -56,20 +57,24 @@ public class JUNOClient extends JFrame implements Receivable {
 		}
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 450, 300);
+		setBounds(100, 100, 600, 400);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-		contentPane.setLayout(new BorderLayout(0, 0));
+		contentPane.setLayout(new BorderLayout());
 		setContentPane(contentPane);
 		contentPane.setLayout(new BorderLayout());
-
-		initializeChat();
+		
 		intializeGameArea();
+		initializeChat();
 
 	}
 
 	private void intializeGameArea() {
-
+		JPanel gamePane = new JPanel(new BorderLayout());
+		JButton startButton = new JButton("Start Game");
+		gamePane.add(startButton, "Center");
+		contentPane.add(gamePane, "East");
+		
 	}
 
 	private void initializeChat() {
@@ -85,46 +90,33 @@ public class JUNOClient extends JFrame implements Receivable {
 
 		// south panel
 		JPanel inputPanel = new JPanel(new FlowLayout());
-		chatInputArea = new JTextArea(3, 25);
+		chatInputArea = new JTextArea(3, 15);
 		chatInputArea.setEditable(true);
 		chatInputArea.setLineWrap(true);
 		chatInputArea.setWrapStyleWord(true);
 		JScrollPane inputScroll = new JScrollPane(chatInputArea);
 		inputScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		inputPanel.add(inputScroll);
-		chatInputArea.addKeyListener(new KeyListener() {
+		chatInputArea.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_ENTER && e.getModifiers() == KeyEvent.CTRL_MASK) {
 					sendChat();
 				}
 			}
-
-			@Override
-			public void keyTyped(KeyEvent e) {
-			}
-
-			@Override
-			public void keyReleased(KeyEvent e) {
-			}
 		});
 		this.setVisible(true);
+		
 		// send button setup
 		JButton send = new JButton("Send");
 		inputPanel.add(send);
-		send.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				sendChat();
-			}
-		});
-
+		send.addActionListener(e -> sendChat());
+			
 		chatPane.add(inputPanel, "South");
 		contentPane.add(chatPane, "West");
 		chatPane.setVisible(true);
 		setVisible(true);
 		chatInputArea.requestFocusInWindow();
-
 	}
 
 	private void sendChat() {
@@ -135,9 +127,8 @@ public class JUNOClient extends JFrame implements Receivable {
 		message.put("type", "chat");
 		message.put("message", chatSend);
 		protocol.sendMessage(message);
-		chatArea.append("ME: " + chatSend + "\n");
+		chatArea.append(username + ": " + chatSend + "\n");
 		chatInputArea.setText("");
-
 	}
 
 	private void handleChat(JSONObject m) {
@@ -146,6 +137,7 @@ public class JUNOClient extends JFrame implements Receivable {
 		chatArea.append(message.getString("fromUser") + ": " + message.getString("message") + "\n");
 	}
 	
+	@Override
 	public void setUsername(String user) {
 		if (!userSet) {
 			this.username = user;
