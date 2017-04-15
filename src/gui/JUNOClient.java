@@ -7,10 +7,12 @@
 package gui;
 
 import java.awt.BorderLayout;
-import java.awt.EventQueue;
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.io.IOException;
 
 import javax.swing.JButton;
@@ -47,8 +49,13 @@ public class JUNOClient extends JFrame implements Receivable {
 	 * 
 	 */
 	public JUNOClient() {
-		connectToServer();
-		
+		try {
+			protocol = new Protocol(this);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 600, 400);
 		contentPane = new JPanel();
@@ -62,27 +69,13 @@ public class JUNOClient extends JFrame implements Receivable {
 
 	}
 
-	private void connectToServer() {
-		try {
-			protocol = new Protocol(this);
-		} catch (IOException e) {
-			System.err.println("Error in setting up protocol");
-			e.printStackTrace();
-		}
-		
-	}
-
 	private void intializeGameArea() {
 		JPanel gamePane = new JPanel(new BorderLayout());
 		JButton startButton = new JButton("Start Game");
-		startButton.addActionListener(e -> startGame());
-		Card cardTest = new Card(Card.Color.RED, Card.Value.ZERO);
-		gamePane.add(cardTest, "Center");
-		gamePane.add(startButton, "South");
-		contentPane.add(gamePane, "Center");
+		gamePane.add(startButton, "Center");
+		contentPane.add(gamePane, "East");
 		
 	}
-
 
 	private void initializeChat() {
 		// center panel
@@ -92,7 +85,6 @@ public class JUNOClient extends JFrame implements Receivable {
 		chatArea.setLineWrap(true);
 		chatArea.setWrapStyleWord(true);
 		JScrollPane chatScroll = new JScrollPane(chatArea);
-		chatScroll.setSize(150, 200);
 		chatScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		chatPane.add(chatScroll, "Center");
 
@@ -113,6 +105,7 @@ public class JUNOClient extends JFrame implements Receivable {
 				}
 			}
 		});
+		this.setVisible(true);
 		
 		// send button setup
 		JButton send = new JButton("Send");
@@ -122,16 +115,9 @@ public class JUNOClient extends JFrame implements Receivable {
 		chatPane.add(inputPanel, "South");
 		contentPane.add(chatPane, "West");
 		chatPane.setVisible(true);
+		setVisible(true);
 		chatInputArea.requestFocusInWindow();
 	}
-
-	private void startGame() {
-		chatArea.append("Requesting New Game\n");
-		JSONObject message = new JSONObject();
-		message.put("type", "startGame");
-		protocol.sendMessage(message);
-	}
-
 
 	private void sendChat() {
 		System.out.println("executed sendText()");
@@ -172,17 +158,7 @@ public class JUNOClient extends JFrame implements Receivable {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					JUNOClient client = new JUNOClient();
-					client.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
+		JUNOClient client = new JUNOClient();
 	}
-	
 
 }
